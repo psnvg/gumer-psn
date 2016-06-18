@@ -67,7 +67,7 @@ var
 */
 function initLogin(callback) {
 	debug('Getting login');
-	request.get({ 
+	request.get({
 			url: psnURL.SignIN
 			, headers : {
 				'User-Agent': userAgent
@@ -107,7 +107,7 @@ function getLogin(callback, referer, params) {
 			}
 		}, function (error, response, body) {
 			if (!error) {
-				followRedirect(null, response.headers.location, referer);
+				followRedirect(callback, response.headers.location, referer);
 			}
 			else {
 				debug('ERROR: ' + error)
@@ -129,7 +129,7 @@ function followRedirect(callback, url, referer) {
 		}, function (error, response, body) {
 			if (!error) {
 				var codeResult = codeRegex.exec(unescape(response.headers.location));
-				getAccessToken(codeResult[1])
+				getAccessToken(codeResult[1], callback)
 			}
 			else {
 				debug('ERROR: ' + error)
@@ -206,7 +206,7 @@ function getAccessToken(authCode, callback) {
 				else {
 					debug('ERROR: ' + JSON.stringify(error))
 				}
-		})	
+		})
 	}
 }
 /*
@@ -215,7 +215,7 @@ function getAccessToken(authCode, callback) {
 * @param 	Function 	callback 	- Calls this function once the request is complete
 */
 function psnGETRequest (url, callback) {
-	var 
+	var
 		reqOptions = {
 			url: url
 			,method : 'GET'
@@ -243,7 +243,7 @@ function psnGETRequest (url, callback) {
 					if (responseJSON.error.code === 2105858 || responseJSON.error.code === 2138626) {
 						debug('Token has expired, asking for new one');
 						initLogin(function() {
-							psnGETRequest(url, callback)	
+							psnGETRequest(url, callback)
 						});
 					}
 					else {
@@ -266,7 +266,7 @@ function psnGETRequest (url, callback) {
 * @param 	Function 	callback 	- Calls this function once the request is complete
 */
 function psnPOSTRequest (url, callback) {
-	var 
+	var
 		reqOptions = {
 			 url: url
 			,method : 'POST'
@@ -294,7 +294,7 @@ function psnPOSTRequest (url, callback) {
 					if (responseJSON.error.code === 2105858 || responseJSON.error.code === 2138626) {
 						debug('Token has expired, asking for new one');
 						initLogin(function() {
-							psnGETRequest(url, callback)	
+							psnGETRequest(url, callback)
 						});
 					}
 					else {
@@ -325,12 +325,12 @@ exports.init = function(params, callback) {
 		// Setting up language for results
 		if (languages.indexOf(params.npLanguage) >= 0)
 			options.npLanguage = params.npLanguage
-		else 
+		else
 			debug('Invalid "'+params.npLanguage+'" npLanguage value, using "en" instead');
 		// Setting up server region
-		if (regions.indexOf(params.region) >= 0) 
+		if (regions.indexOf(params.region) >= 0)
 			options.region = params.region
-		else 
+		else
 			debug('Invalid "'+params.region+'" region value, using "us" instead');
 		// Update the language/region
 		Object.keys(psnURL).forEach(function(key) {
@@ -351,16 +351,20 @@ exports.init = function(params, callback) {
 * @param 	Function 	callback 	- Calls this function once the request is complete
 */
 exports.getProfile = function (psnid, callback) {
+	console.log(1);
 	if (accessToken.length > 1) {
+		console.log(2);
 		debug('Asking profile data for: ' + psnid);
 		psnGETRequest(psnURL.profileData.replace("{{id}}", psnid),callback);
 	}
 	else {
+		console.log(3);
 		debug('Asking for new token');
 		getAccessToken('',function() {
 			psnGETRequest(psnURL.profileData.replace("{{id}}", psnid),callback);
 		})
 	}
+	console.log(4);
 }
 /*
 * @desc 	Get the detailed trophy title data by PSNID
@@ -443,7 +447,7 @@ exports.getTrophy = function (psnid, npCommID, groupId, trophyID, callback) {
 * @param 	String url - The URL (with protocol/port/parameters)
 */
 function psnGETRequestDEBUG (url, callback) {
-	var 
+	var
 		options = {
 			url: url
 			,method : 'GET'
