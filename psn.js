@@ -351,20 +351,16 @@ exports.init = function(params, callback) {
 * @param 	Function 	callback 	- Calls this function once the request is complete
 */
 exports.getProfile = function (psnid, callback) {
-	console.log(1);
 	if (accessToken.length > 1) {
-		console.log(2);
 		debug('Asking profile data for: ' + psnid);
 		psnGETRequest(psnURL.profileData.replace("{{id}}", psnid),callback);
 	}
 	else {
-		console.log(3);
 		debug('Asking for new token');
 		getAccessToken('',function() {
 			psnGETRequest(psnURL.profileData.replace("{{id}}", psnid),callback);
 		})
 	}
-	console.log(4);
 }
 /*
 * @desc 	Get the detailed trophy title data by PSNID
